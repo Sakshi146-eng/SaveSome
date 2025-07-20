@@ -1,12 +1,27 @@
 import express from "express";
-import {PORT} from "./config.js";
-
+import dotenv from "dotenv";
+import mongoose from "mongoose"
+import userRoutes from "./models/controllers/userController.js"
 const app=express();
-app.listen(PORT, () => {
-    console.log(`App is listening to ${PORT}`);
-});
 
-app.get('/',(request,response)=>{
-    console.log(response);
-    return response.status(234).send('Welcome to MERN stack');
+dotenv.config();
+
+app.use(express.json());
+
+app.use('/',userRoutes);
+
+const PORT=process.env.PORT||5000;
+const mongodbURL=process.env.mongodbURL;
+
+mongoose.connect(mongodbURL)
+.then(()=> {
+    console.log(`Database connected successfully`);
+    app.listen(PORT, () => {
+        console.log(`App is listening to ${PORT}`);
+    });
 })
+.catch((error)=>
+{
+    console.log(error);
+})
+
