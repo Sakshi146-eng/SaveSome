@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../User.js';
+import { User, UserProfile, UserComplaint, UserCalculate } from '../User.js';
 
 const router=express.Router();
 
@@ -72,6 +72,129 @@ router.post('/user/login', async(request,response)=>{
             message:`Login successful`,
             token:user.authToken,
             userId:user._id,
+        })
+    
+    }catch(error){
+        return response.status(500).json({message:error.message})
+    }
+
+})
+
+router.post('/user/:id', async(request,response)=>{
+    const {id}=request.params;
+    const {aadhar,members,location}=request.body;
+    try{
+        if(!aadhar || 
+           !members ||
+           !location
+        )
+        {
+            return response.status(401).json({message:`Please fill all the required fields`});
+        }
+
+        const result=await UserProfile.findOneAndUpdate({userId:id},
+            {
+                userId:id,
+                aadhar,
+                members,
+                location
+            },
+            {upsert:true, new:true, runValidators:true}
+        )
+        if(!result){
+            return response.status(401).json({message:`Could not save Profile`});
+        }
+
+        return response.status(200).json({
+            message:`Profile saved successfully`,
+            profile:result
+        })
+    
+    }catch(error){
+        return response.status(500).json({message:error.message})
+    }
+
+})
+
+router.get('/user/:id', async(request,response)=>{
+    try{
+        const {id}=request.params;
+        const profile=await UserProfile.findOne({userId:id});
+        return response.status(200).json({
+            message:`Profile saved successfully`,
+            profile:profile
+        })
+    
+    }catch(error){
+        return response.status(500).json({message:error.message})
+    }
+
+})
+
+router.post('/user/complaint/:id', async(request,response)=>{
+    const {id}=request.params;
+    const {problem,time,deadline}=request.body;
+    try{
+        if(!problem || 
+           !time ||
+           !deadline
+        )
+        {
+            return response.status(401).json({message:`Please fill all the required fields`});
+        }
+
+        const complaint=await UserComplaint.findOneAndUpdate({userId:id},
+            {
+                userId:id,
+                problem,
+                time,
+                deadline,
+                solution:''
+            },
+            {upsert:true, new:true, runValidators:true}
+        )
+        if(!complaint){
+            return response.status(401).json({message:`Failed to register the complaint`});
+        }
+
+        return response.status(200).json({
+            message:`Complaint registered successfully`,
+            complaint
+        })
+    
+    }catch(error){
+        return response.status(500).json({message:error.message})
+    }
+
+})
+
+router.post('/user/calculate/:id', async(request,response)=>{
+    const {id}=request.params;
+    const {electricity,water}=request.body;
+    try{
+        if(!electricity || 
+           !water 
+        )
+        {
+            return response.status(401).json({message:`Please fill all the required fields`});
+        }
+        const user=await UserProfile.findOne({userId:id});
+        const calculate=await UserCalculate.findOneAndUpdate({userId:id},
+            {
+                userId:id,
+                members:user.members,
+                electricity,
+                water,
+            },
+            {upsert:true, new:true, runValidators:true}
+        )
+        if(!calculate){
+            return response.status(401).json({message:`Insufficient data provided for request`});
+        }
+
+        return response.status(200).json({
+            message:`Request saved successfully`,
+            calculate
         })
     
     }catch(error){
