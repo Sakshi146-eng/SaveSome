@@ -1,12 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose"
-import userRoutes from "./models/controllers/userController.js"
+import mongoose from "mongoose";
+import userRoutes from "./models/controllers/userController.js";
 import cors from "cors";
-const app = express();
 
 dotenv.config();
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 app.use('/', userRoutes);
@@ -16,11 +16,11 @@ const mongodbURL = process.env.mongodbURL;
 
 mongoose.connect(mongodbURL)
     .then(() => {
-        console.log(`Database connected successfully`);
+        console.log(`✅ Database connected successfully`);
         app.listen(PORT, () => {
-            console.log(`App is listening to ${PORT}`);
+            console.log(`🚀 App is listening on port ${PORT}`);
         });
     })
     .catch((error) => {
-        console.log(error);
-    })
+        console.error(`❌ Database connection failed:`, error);
+    });
