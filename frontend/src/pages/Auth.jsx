@@ -38,7 +38,7 @@ const Auth = () => {
       const url = "http://localhost:5555/user/login";
       const { data: res } = await axios.post(url, loginData);
       localStorage.setItem("token", res.data);
-      navigate('/dashboard');
+      navigate(`/dashboard/${res.userId}`);
     } catch (error) {
       if (error.response && error.response.status >= 400 && error.response.status <= 500) {
         setLoginError(error.response.data.message);
