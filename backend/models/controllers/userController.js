@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { User, UserProfile, UserComplaint, UserCalculate } from '../User.js';
 
 const router=express.Router();
@@ -78,6 +79,36 @@ router.post('/user/login', async(request,response)=>{
         return response.status(500).json({message:error.message})
     }
 
+})
+
+router.post('/user/google-login',async(request,response)=>{
+    const {token}=request.body;
+    try{
+        const client=new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        const ticket=await client.verifyIdToken({
+            idToken:token,
+            audience:process.env.GOOGLE_CLIENT_ID
+        })
+        const {sub,email,name}=ticket.getPayload();
+        let user=await User.findOne({googleId:sub});
+        if(!user){
+            user=new User({
+        googleId:sub,
+        username:email,
+       });
+       await user.save();
+    }
+    const appToken=generateToken(user._id);
+    user.authToken=appToken;
+    await user.save();
+    return response.status(200).json({
+        message:`Google Login Successful`,
+        token:user.authToken,
+    userId:user._id})
+    }
+    catch(error){
+        return response.status(500).json({message:error.message})
+    }
 })
 
 router.post('/user/:id', async(request,response)=>{

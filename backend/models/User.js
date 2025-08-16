@@ -10,13 +10,16 @@ const userSchema=mongoose.Schema(
         },
         mobno:{
             type:String,
-            required:true,
             unique:true,
             match:/^[0-9]{10}$/
         },
         password:{
             type:String,
-            required:true,
+        },
+        googleId:{
+            type:String,
+            unique:true,
+            sparse:true,
         },
         authToken:{
             type:String,

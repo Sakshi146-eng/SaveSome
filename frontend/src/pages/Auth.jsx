@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styles from "./Authstyles.module.css";
+import { GoogleLogin } from "@react-oauth/google";
+
 
 const Auth = () => {
   const [tab, setTab] = useState("signup");
@@ -45,6 +47,26 @@ const Auth = () => {
       }
     }
   };
+
+  // Create the handler for Google login success
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+        const res = await axios.post('http://localhost:5555/user/google-login', {
+            token: credentialResponse.credential,
+        });
+        const { token, userId } = res.data;
+        localStorage.setItem('token', token);
+        navigate(`/dashboard/${userId}`);
+    } catch (error) {
+        console.error('Google login failed', error);
+        alert('Google login failed. Please try again.');
+    }
+};
+
+const handleGoogleFailure = () => {
+  console.log('Google Login Failed');
+};
+
 
   return (
     <div className={styles.auth_card_center}>
@@ -134,6 +156,8 @@ const Auth = () => {
                   />
                   {loginError && <div className={styles.error}>{loginError}</div>}
                   <button type="submit" className={styles.submit_btn}>Sign In</button>
+                  <div className={styles.switch_text}>OR</div>
+                  <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFailure} />
                   <div className={styles.switch_text}>
                     New here?{' '}
                     <span className={styles.switch_link} onClick={() => setTab("signup")}>SIGN UP</span>
